@@ -52,7 +52,7 @@ type SumberDaya struct {
 ```
 
 ## 3. Satu keputusan desain
-(Satu keputusan yang kamu ambil, pilihan lain yang kamu pertimbangkan, dan alasanmu memilih yang ini. Contoh: kenapa cek bentrok per slot, bukan per rentang.)
+saya memilih untuk memisah filenya agar lebih modular dan ga terlalu pusing karena bisa baca dengan maximal di masing masing code nya
 
 ## 4. Bug atau kendala (minimal dua)
 ### Bug 1
