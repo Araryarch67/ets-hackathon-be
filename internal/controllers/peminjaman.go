@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"pinjamkampus/internal/lib"
 	"pinjamkampus/internal/store"
@@ -31,7 +32,7 @@ func DeletePeminjaman(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deleted, ok := store.HapusPeminjaman(id)
+	_, ok := store.HapusPeminjaman(id)
 	if !ok {
 		lib.WriteJSON(w, http.StatusNotFound, map[string]string{
 			"error": "peminjaman tidak ditemukan",
@@ -39,7 +40,9 @@ func DeletePeminjaman(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	lib.WriteJSON(w, http.StatusOK, deleted)
+	lib.WriteJSON(w, http.StatusOK, map[string]string{
+		"message": fmt.Sprintf("success delete id: %d", id),
+	})
 }
 
 func UpdatePeminjaman(w http.ResponseWriter, r *http.Request) {
