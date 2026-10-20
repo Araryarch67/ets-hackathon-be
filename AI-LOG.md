@@ -1,3 +1,7 @@
+```
+https://chatgpt.com/share/6ad74333-8a94-83ec-ac1b-3e9797da5c29
+```
+
 ## 1. Inisialisasi HTTP handler
 
 - Prompt: "Apa maksud `func NewHandler() http.Handler` dan kenapa setiap pemanggilan menghasilkan penyimpanan baru?"
