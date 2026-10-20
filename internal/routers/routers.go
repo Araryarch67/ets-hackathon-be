@@ -17,7 +17,7 @@ func NewHandler() http.Handler {
 	router.HandleFunc("GET /peminjaman", controllers.GetPeminjaman)
 	router.HandleFunc("GET /peminjaman/{id}", controllers.GetPeminjamanByID)
 	router.HandleFunc("PUT /peminjaman/{id}", controllers.UpdatePeminjaman)
-	router.HandleFunc("DELETE /peminjaman/{id}", controllers.GetPeminjaman)
+	router.HandleFunc("DELETE /peminjaman/{id}", controllers.DeletePeminjaman)
 
 	return router
 }
