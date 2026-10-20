@@ -6,6 +6,7 @@ import (
 	"pinjamkampus/internal/lib"
 	"pinjamkampus/internal/store"
 	"strconv"
+	"time"
 )
 
 func CreatePeminjaman(w http.ResponseWriter, r *http.Request) {
@@ -97,4 +98,27 @@ func GetPeminjamanByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	lib.WriteJSON(w, http.StatusOK, s)
+}
+
+func RingkasanPeminjaman(w http.ResponseWriter, r *http.Request) {
+	tanggal := r.URL.Query().Get("tanggal")
+
+	if tanggal == "" {
+		lib.WriteJSON(w, http.StatusBadRequest, map[string]string{
+			"error": "parameter tanggal wajib diisi",
+		})
+		return
+	}
+
+	_, err := time.Parse("2006-01-02", tanggal)
+	if err != nil {
+		lib.WriteJSON(w, http.StatusBadRequest, map[string]string{
+			"error": "format tanggal harus YYYY-MM-DD",
+		})
+		return
+	}
+
+	hasil := store.GetRingkasan(tanggal)
+	lib.WriteJSON(w, http.StatusOK, hasil)
+
 }

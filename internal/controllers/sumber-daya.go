@@ -69,6 +69,7 @@ func GetKetersediaanSumberDaya(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+
 	tanggal := r.URL.Query().Get("tanggal")
 
 	if tanggal == "" {
