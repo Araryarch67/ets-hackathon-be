@@ -9,6 +9,7 @@ import (
 func NewHandler() http.Handler {
 	router := http.NewServeMux()
 
+	router.HandleFunc("GET /sumber-daya/{id}/ketersediaan", controllers.GetKetersediaanSumberDaya)
 	router.HandleFunc("POST /sumber-daya", controllers.CreateSumberDaya)
 	router.HandleFunc("GET /sumber-daya", controllers.GetSumberDaya)
 	router.HandleFunc("GET /sumber-daya/{id}", controllers.GetSumberDayaByID)

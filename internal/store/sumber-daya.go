@@ -50,3 +50,43 @@ func TambahSumberDaya(input SumberDaya) SumberDaya {
 	daftarSumberDaya = append(daftarSumberDaya, input)
 	return input
 }
+
+func GetKetersediaanSumberDaya(id int, tanggal string) (Ketersediaan, bool) {
+	sumberDaya, ok := CariSumberDaya(id)
+	if !ok {
+		return Ketersediaan{}, false
+	}
+
+	hasil := Ketersediaan{
+		SumberDayaID: sumberDaya.ID,
+		Tanggal:      tanggal,
+		Slot:         []SlotKetersediaan{},
+	}
+
+	for slot := 1; slot <= 8; slot++ {
+		terpakai := 0
+
+		for _, p := range daftarPeminjaman {
+			if p.SumberDayaID == id &&
+				p.Tanggal.Format("2006-01-02") == tanggal &&
+				p.Status == "aktif" &&
+				p.SlotMulai <= slot &&
+				p.SlotSelesai >= slot {
+				terpakai += p.Jumlah
+			}
+		}
+
+		sisa := sumberDaya.Stok - terpakai
+		if sisa < 0 {
+			sisa = 0
+		}
+
+		hasil.Slot = append(hasil.Slot, SlotKetersediaan{
+			Slot:     slot,
+			Sisa:     sisa,
+			Tersedia: sisa > 0,
+		})
+	}
+
+	return hasil, true
+}
