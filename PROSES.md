@@ -9,7 +9,7 @@ type Peminjaman struct {
 	ID           int       `json:"id"`
 	SumberDayaID int       `json:"sumber_daya_id"`
 	Peminjam     string    `json:"peminjam"`
-	Tanggal      time.Time `json:"tanggal"`
+	Tanggal      string    `json:"tanggal"`
 	SlotMulai    int       `json:"slot_mulai"`
 	SlotSelesai  int       `json:"slot_selesai"`
 	Jumlah       int       `json:"jumlah"`

@@ -1,52 +1,59 @@
 package store
 
-import (
-	"pinjamkampus/internal/lib"
-	"time"
-)
+import "sort"
 
 type Peminjaman struct {
-	ID           int       `json:"id"`
-	SumberDayaID int       `json:"sumber_daya_id"`
-	Peminjam     string    `json:"peminjam"`
-	Tanggal      time.Time `json:"tanggal"`
-	SlotMulai    int       `json:"slot_mulai"`
-	SlotSelesai  int       `json:"slot_selesai"`
-	Jumlah       int       `json:"jumlah"`
-	Status       string    `json:"status"`
+	ID           int    `json:"id"`
+	SumberDayaID int    `json:"sumber_daya_id"`
+	Peminjam     string `json:"peminjam"`
+	Tanggal      string `json:"tanggal"`
+	SlotMulai    int    `json:"slot_mulai"`
+	SlotSelesai  int    `json:"slot_selesai"`
+	Jumlah       int    `json:"jumlah"`
+	Status       string `json:"status"`
 }
 
 var daftarPeminjaman = []Peminjaman{
 	{
 		ID: 1, SumberDayaID: 1, Peminjam: "Budi",
-		Tanggal:   lib.ParseDate("2026-11-02"),
+		Tanggal:   "2026-11-02",
 		SlotMulai: 1, SlotSelesai: 3, Jumlah: 2,
 		Status: "aktif",
 	},
 	{
 		ID: 2, SumberDayaID: 1, Peminjam: "Rina",
-		Tanggal:   lib.ParseDate("2026-11-02"),
+		Tanggal:   "2026-11-02",
 		SlotMulai: 4, SlotSelesai: 5, Jumlah: 1,
 		Status: "aktif",
 	},
 	{
 		ID: 3, SumberDayaID: 3, Peminjam: "Siti",
-		Tanggal:   lib.ParseDate("2026-11-02"),
+		Tanggal:   "2026-11-02",
 		SlotMulai: 5, SlotSelesai: 6, Jumlah: 2,
 		Status: "aktif",
 	},
 	{
 		ID: 4, SumberDayaID: 2, Peminjam: "Andi",
-		Tanggal:   lib.ParseDate("2026-11-02"),
+		Tanggal:   "2026-11-02",
 		SlotMulai: 2, SlotSelesai: 3, Jumlah: 1,
 		Status: "dibatalkan",
 	},
 	{
 		ID: 5, SumberDayaID: 2, Peminjam: "Dewi",
-		Tanggal:   lib.ParseDate("2026-11-03"),
+		Tanggal:   "2026-11-03",
 		SlotMulai: 1, SlotSelesai: 2, Jumlah: 1,
 		Status: "aktif",
 	},
+}
+
+var nextPeminjamanID = 1
+
+func init() {
+	for _, p := range daftarPeminjaman {
+		if p.ID >= nextPeminjamanID {
+			nextPeminjamanID = p.ID + 1
+		}
+	}
 }
 
 type Ringkasan struct {
@@ -69,7 +76,7 @@ func GetRingkasan(tanggal string) Ringkasan {
 	}
 
 	for _, p := range daftarPeminjaman {
-		if p.Tanggal.Format("2006-01-02") != tanggal {
+		if p.Tanggal != tanggal {
 			continue
 		}
 
@@ -102,8 +109,33 @@ func GetRingkasan(tanggal string) Ringkasan {
 	return hasil
 }
 
-func ListPeminjaman() []Peminjaman {
-	return daftarPeminjaman
+type FilterPeminjaman struct {
+	SumberDayaID *int
+	Tanggal      string
+	Status       string
+}
+
+func ListPeminjaman(filter FilterPeminjaman) []Peminjaman {
+	hasil := make([]Peminjaman, 0, len(daftarPeminjaman))
+
+	for _, p := range daftarPeminjaman {
+		if filter.SumberDayaID != nil && p.SumberDayaID != *filter.SumberDayaID {
+			continue
+		}
+		if filter.Tanggal != "" && p.Tanggal != filter.Tanggal {
+			continue
+		}
+		if filter.Status != "" && p.Status != filter.Status {
+			continue
+		}
+		hasil = append(hasil, p)
+	}
+
+	sort.Slice(hasil, func(i, j int) bool {
+		return hasil[i].ID < hasil[j].ID
+	})
+
+	return hasil
 }
 
 func CariPeminjaman(id int) (Peminjaman, bool) {
@@ -119,6 +151,7 @@ func UpdatePeminjaman(id int, input Peminjaman) (Peminjaman, bool) {
 	for i, p := range daftarPeminjaman {
 		if p.ID == id {
 			input.ID = id
+			input.Status = p.Status
 			daftarPeminjaman[i] = input
 			return input, true
 		}
@@ -128,13 +161,9 @@ func UpdatePeminjaman(id int, input Peminjaman) (Peminjaman, bool) {
 }
 
 func TambahPeminjaman(input Peminjaman) Peminjaman {
-	input.ID = 1
-
-	for _, p := range daftarPeminjaman {
-		if p.ID >= input.ID {
-			input.ID = p.ID + 1
-		}
-	}
+	input.ID = nextPeminjamanID
+	input.Status = "aktif"
+	nextPeminjamanID++
 
 	daftarPeminjaman = append(daftarPeminjaman, input)
 	return input

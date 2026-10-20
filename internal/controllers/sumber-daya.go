@@ -5,20 +5,27 @@ import (
 	"pinjamkampus/internal/lib"
 	"pinjamkampus/internal/store"
 	"strconv"
-	"time"
 )
 
 func CreateSumberDaya(w http.ResponseWriter, r *http.Request) {
-	var input store.SumberDaya
+	var input sumberDayaInput
 
 	if err := lib.ReadJSON(r, &input); err != nil {
 		lib.WriteJSON(w, http.StatusBadRequest, map[string]string{
-			"error": "JSON tidak valid",
+			"error": "body JSON tidak valid",
 		})
 		return
 	}
 
-	created := store.TambahSumberDaya(input)
+	data, pesan := input.validasi()
+	if pesan != "" {
+		lib.WriteJSON(w, http.StatusBadRequest, map[string]string{
+			"error": pesan,
+		})
+		return
+	}
+
+	created := store.TambahSumberDaya(data)
 
 	lib.WriteJSON(w, http.StatusCreated, created)
 }
@@ -70,6 +77,13 @@ func GetKetersediaanSumberDaya(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if _, ok := store.CariSumberDaya(id); !ok {
+		lib.WriteJSON(w, http.StatusNotFound, map[string]string{
+			"error": "sumber daya tidak ditemukan",
+		})
+		return
+	}
+
 	tanggal := r.URL.Query().Get("tanggal")
 
 	if tanggal == "" {
@@ -79,8 +93,7 @@ func GetKetersediaanSumberDaya(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = time.Parse("2006-01-02", tanggal)
-	if err != nil {
+	if !lib.ValidTanggal(tanggal) {
 		lib.WriteJSON(w, http.StatusBadRequest, map[string]string{
 			"error": "format tanggal harus YYYY-MM-DD",
 		})

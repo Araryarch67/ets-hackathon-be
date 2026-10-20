@@ -38,14 +38,19 @@ type Ketersediaan struct {
 	Slot         []SlotKetersediaan `json:"slot"`
 }
 
-func TambahSumberDaya(input SumberDaya) SumberDaya {
-	input.ID = 1
+var nextSumberDayaID = 1
 
-	for _, p := range daftarSumberDaya {
-		if p.ID >= input.ID {
-			input.ID = p.ID + 1
+func init() {
+	for _, s := range daftarSumberDaya {
+		if s.ID >= nextSumberDayaID {
+			nextSumberDayaID = s.ID + 1
 		}
 	}
+}
+
+func TambahSumberDaya(input SumberDaya) SumberDaya {
+	input.ID = nextSumberDayaID
+	nextSumberDayaID++
 
 	daftarSumberDaya = append(daftarSumberDaya, input)
 	return input
@@ -68,7 +73,7 @@ func GetKetersediaanSumberDaya(id int, tanggal string) (Ketersediaan, bool) {
 
 		for _, p := range daftarPeminjaman {
 			if p.SumberDayaID == id &&
-				p.Tanggal.Format("2006-01-02") == tanggal &&
+				p.Tanggal == tanggal &&
 				p.Status == "aktif" &&
 				p.SlotMulai <= slot &&
 				p.SlotSelesai >= slot {

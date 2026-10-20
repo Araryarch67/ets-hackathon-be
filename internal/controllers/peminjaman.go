@@ -1,26 +1,31 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"pinjamkampus/internal/lib"
 	"pinjamkampus/internal/store"
 	"strconv"
-	"time"
 )
 
 func CreatePeminjaman(w http.ResponseWriter, r *http.Request) {
-	var input store.Peminjaman
+	var input peminjamanInput
 
 	if err := lib.ReadJSON(r, &input); err != nil {
 		lib.WriteJSON(w, http.StatusBadRequest, map[string]string{
-			"error": "JSON tidak valid",
+			"error": "body JSON tidak valid",
 		})
 		return
 	}
 
-	created := store.TambahPeminjaman(input)
+	data, pesan := input.validasi()
+	if pesan != "" {
+		lib.WriteJSON(w, http.StatusBadRequest, map[string]string{
+			"error": pesan,
+		})
+		return
+	}
 
+	created := store.TambahPeminjaman(data)
 	lib.WriteJSON(w, http.StatusCreated, created)
 }
 
@@ -41,9 +46,7 @@ func DeletePeminjaman(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	lib.WriteJSON(w, http.StatusOK, map[string]string{
-		"message": fmt.Sprintf("success delete id: %d", id),
-	})
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func UpdatePeminjaman(w http.ResponseWriter, r *http.Request) {
@@ -55,29 +58,44 @@ func UpdatePeminjaman(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var input store.Peminjaman
-
-	_, ok := store.CariPeminjaman(id)
-	if !ok {
-		lib.WriteJSON(w, http.StatusNotFound, map[string]string{
-			"error": "sumber daya tidak ditemukan",
-		})
-		return
-	}
-
-	updated, ok := store.UpdatePeminjaman(id, input)
-	if !ok {
+	if _, ok := store.CariPeminjaman(id); !ok {
 		lib.WriteJSON(w, http.StatusNotFound, map[string]string{
 			"error": "peminjaman tidak ditemukan",
 		})
 		return
 	}
 
+	var input peminjamanInput
+
+	if err := lib.ReadJSON(r, &input); err != nil {
+		lib.WriteJSON(w, http.StatusBadRequest, map[string]string{
+			"error": "body JSON tidak valid",
+		})
+		return
+	}
+
+	data, pesan := input.validasi()
+	if pesan != "" {
+		lib.WriteJSON(w, http.StatusBadRequest, map[string]string{
+			"error": pesan,
+		})
+		return
+	}
+
+	updated, _ := store.UpdatePeminjaman(id, data)
 	lib.WriteJSON(w, http.StatusOK, updated)
 }
 
 func GetPeminjaman(w http.ResponseWriter, r *http.Request) {
-	lib.WriteJSON(w, http.StatusOK, store.ListPeminjaman())
+	filter, pesan := parseFilterPeminjaman(r)
+	if pesan != "" {
+		lib.WriteJSON(w, http.StatusBadRequest, map[string]string{
+			"error": pesan,
+		})
+		return
+	}
+
+	lib.WriteJSON(w, http.StatusOK, store.ListPeminjaman(filter))
 }
 
 func GetPeminjamanByID(w http.ResponseWriter, r *http.Request) {
@@ -92,7 +110,7 @@ func GetPeminjamanByID(w http.ResponseWriter, r *http.Request) {
 	s, ok := store.CariPeminjaman(id)
 	if !ok {
 		lib.WriteJSON(w, http.StatusNotFound, map[string]string{
-			"error": "sumber daya tidak ditemukan",
+			"error": "peminjaman tidak ditemukan",
 		})
 		return
 	}
@@ -110,8 +128,7 @@ func RingkasanPeminjaman(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := time.Parse("2006-01-02", tanggal)
-	if err != nil {
+	if !lib.ValidTanggal(tanggal) {
 		lib.WriteJSON(w, http.StatusBadRequest, map[string]string{
 			"error": "format tanggal harus YYYY-MM-DD",
 		})
@@ -120,5 +137,4 @@ func RingkasanPeminjaman(w http.ResponseWriter, r *http.Request) {
 
 	hasil := store.GetRingkasan(tanggal)
 	lib.WriteJSON(w, http.StatusOK, hasil)
-
 }

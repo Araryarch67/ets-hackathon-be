@@ -16,4 +16,4 @@
 - [*] Change request
 
 ## Yang belum selesai
-endpoint yang pakai POST dan PUT beberapa belum ada validasi untuk input ( request body nya ), jadi request body apa aja bisa, untuk yang GET harusnya sudah aman semua, lalu fitur untuk bentrok begitu juga belum divalidasi, dan permintaan bersamaan juga belum saya belum implementasi mutex untuk struct nya sehingga akan race condition :v
+- B5 Deteksi bentrok (409) dan B7 Aman untuk permintaan bersamaan belum di implementasi, pengecekan kapasitas per slot belum diimplementasikan, karena kurang mengerti materi concurrency, mutex, jadi saya skip
